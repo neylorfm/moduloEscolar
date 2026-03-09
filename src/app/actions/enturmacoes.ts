@@ -30,12 +30,16 @@ export async function getEnturmacoesPorTurma(turmaId: number): Promise<{ data?: 
         const { data, error } = await supabaseAdmin
             .from("enturmacoes")
             .select(`
-                *,
+                id,
+                turma_id,
+                disciplina_id,
+                usuario_id,
                 usuarios (
                     nome
                 ),
                 enturmacao_horarios (
                     id,
+                    enturmacao_id,
                     dia_semana,
                     horario_id,
                     horarios!inner(inicio, fim)
@@ -44,9 +48,48 @@ export async function getEnturmacoesPorTurma(turmaId: number): Promise<{ data?: 
             .eq("turma_id", turmaId);
 
         if (error) throw error;
-        return { data: data as Enturmacao[] };
+
+        const formattedData = data?.map(d => ({
+            ...d,
+            usuarios: Array.isArray(d.usuarios) ? d.usuarios[0] : d.usuarios,
+            enturmacao_horarios: d.enturmacao_horarios?.map((eh: any) => ({
+                ...eh,
+                horarios: Array.isArray(eh.horarios) ? eh.horarios[0] : eh.horarios
+            }))
+        }));
+
+        return { data: formattedData as Enturmacao[] };
     } catch (err: any) {
         console.error("Error fetching enturmacoes:", err.message);
+        return { error: err.message };
+    }
+}
+
+export async function getEnturmacoesPorUsuario(usuarioId: string) {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from("enturmacoes")
+            .select(`
+                id,
+                turma_id,
+                disciplina_id,
+                turmas (id, serie, nome),
+                disciplinas (id, nome),
+                enturmacao_horarios!inner(id)
+            `)
+            .eq("usuario_id", usuarioId);
+
+        if (error) throw error;
+
+        const formattedData = data?.map(d => ({
+            ...d,
+            turmas: Array.isArray(d.turmas) ? d.turmas[0] : d.turmas,
+            disciplinas: Array.isArray(d.disciplinas) ? d.disciplinas[0] : d.disciplinas,
+        }));
+
+        return { data: formattedData as any[] };
+    } catch (err: any) {
+        console.error("Error fetching enturmacoes por usuario:", err.message);
         return { error: err.message };
     }
 }
@@ -56,12 +99,16 @@ export async function getAllEnturmacoes(): Promise<{ data?: Enturmacao[], error?
         const { data, error } = await supabaseAdmin
             .from("enturmacoes")
             .select(`
-                *,
+                id,
+                turma_id,
+                disciplina_id,
+                usuario_id,
                 usuarios (
                     nome
                 ),
                 enturmacao_horarios (
                     id,
+                    enturmacao_id,
                     dia_semana,
                     horario_id,
                     horarios!inner(inicio, fim)
@@ -69,7 +116,18 @@ export async function getAllEnturmacoes(): Promise<{ data?: Enturmacao[], error?
             `);
 
         if (error) throw error;
-        return { data: data as Enturmacao[] };
+
+        // Ensure returning types match the expected structure
+        const formattedData = data?.map(d => ({
+            ...d,
+            usuarios: Array.isArray(d.usuarios) ? d.usuarios[0] : d.usuarios,
+            enturmacao_horarios: d.enturmacao_horarios?.map((eh: any) => ({
+                ...eh,
+                horarios: Array.isArray(eh.horarios) ? eh.horarios[0] : eh.horarios
+            }))
+        }));
+
+        return { data: formattedData as Enturmacao[] };
     } catch (err: any) {
         console.error("Error fetching all enturmacoes:", err.message);
         return { error: err.message };

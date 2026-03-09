@@ -317,115 +317,132 @@ export function EnturmacaoClient({
                                 Nenhuma turma cadastrada.
                             </div>
                         )}
-                        {turmas.map(turma => (
-                            <div key={turma.id} className="border border-slate-200 dark:border-zinc-800 shadow-sm rounded-lg overflow-hidden">
-                                <div className="bg-slate-100 dark:bg-zinc-800 px-4 py-3 font-semibold text-slate-800 dark:text-zinc-200 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
-                                    <span>{turma.serie} - {turma.nome}</span>
-                                </div>
-
-                                <table className="w-full text-left text-sm text-slate-600 dark:text-zinc-400">
-                                    <thead className="text-xs uppercase bg-white dark:bg-zinc-900 text-slate-500 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
-                                        <tr>
-                                            <th className="px-4 py-3 font-medium w-1/4">Área</th>
-                                            <th className="px-4 py-3 font-medium w-1/4">Disciplina</th>
-                                            <th className="px-4 py-3 font-medium text-center">Horários</th>
-                                            <th className="px-4 py-3 font-medium text-right w-1/4">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
-                                        {areas.flatMap(area =>
-                                            area.disciplinas.map(discip => {
-                                                const key = `${turma.id}_${discip.id}`;
-
-                                                const otherProfessors = getOtherAssignedProfessors(turma.id, discip.id);
-                                                const hasOtherProfessors = otherProfessors.length > 0;
-
-                                                // Determine UI state
-                                                const isAssigned = isAssignedLocally(turma.id, discip.id);
-
-                                                const localState = localAssignments[key];
-                                                const dbSchedulesStr = JSON.stringify(getDBAssignedSchedules(turma.id, discip.id).map(s => ({ dia_semana: s.dia_semana, horario_id: s.horario_id })).sort((a, b) => a.horario_id - b.horario_id));
-                                                const localSchedulesStr = localState !== undefined ? JSON.stringify([...localState].sort((a, b) => a.horario_id - b.horario_id)) : undefined;
-
-                                                const hasChanged = localSchedulesStr !== undefined && localSchedulesStr !== dbSchedulesStr;
-
-                                                // Calculate summary of days
-                                                let schedToSummarize = localState !== undefined ? localState : getDBAssignedSchedules(turma.id, discip.id);
-                                                const daysSet = new Set(schedToSummarize.map(s => s.dia_semana.substring(0, 3)));
-                                                const daysSummary = Array.from(daysSet).join(', ');
-
-                                                return (
-                                                    <tr key={discip.id} className={`hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors ${isAssigned ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
-                                                        <td className="px-4 py-3 text-slate-500 text-xs">
-                                                            {area.nome}
-                                                        </td>
-                                                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100">
-                                                            {discip.nome}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-center">
-                                                            {isEditMode ? (
-                                                                <Button
-                                                                    variant={isAssigned ? "default" : "outline"}
-                                                                    size="sm"
-                                                                    onClick={() => openScheduleModal(turma.id, discip.id, turma.nome, discip.nome)}
-                                                                    className={isAssigned ? "bg-indigo-600 hover:bg-indigo-700" : ""}
-                                                                >
-                                                                    <Calendar className="w-4 h-4 mr-2" />
-                                                                    {isAssigned ? `${schedToSummarize.length} Aulas` : "Configurar"}
-                                                                </Button>
-                                                            ) : (
-                                                                isAssigned ? (
-                                                                    <div className="flex items-center justify-center gap-2">
-                                                                        <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-                                                                        <span className="font-medium text-slate-700 dark:text-zinc-300">
-                                                                            {schedToSummarize.length} Aula(s)
-                                                                        </span>
-                                                                    </div>
-                                                                ) : (
-                                                                    <span className="text-slate-400 dark:text-zinc-600">-</span>
-                                                                )
-                                                            )}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right">
-                                                            <div className="text-xs flex flex-col items-end gap-1">
-                                                                {hasChanged && (
-                                                                    <span className="text-indigo-600 font-medium text-xs break-keep">
-                                                                        (Modificado)
-                                                                    </span>
-                                                                )}
-                                                                {isAssigned && (
-                                                                    <span className="text-emerald-700 dark:text-emerald-400 font-medium text-[10px] uppercase tracking-wider">
-                                                                        {daysSummary}
-                                                                    </span>
-                                                                )}
-                                                                {hasOtherProfessors && (
-                                                                    <span className="text-amber-600 mt-1" title={`Também lecionado por: ${otherProfessors.join(', ')}`}>
-                                                                        Colega(s): {otherProfessors.join(', ')}
-                                                                    </span>
-                                                                )}
-                                                                {!isAssigned && !hasOtherProfessors && (
-                                                                    <span className="text-slate-400">
-                                                                        Sem professor
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        )}
-
-                                        {areas.every(a => a.disciplinas.length === 0) && (
-                                            <tr>
-                                                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                                                    Nenhuma disciplina cadastrada.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                        {!isEditMode && turmas.length > 0 && !turmas.some(turma => areas.some(a => a.disciplinas.some(d => isAssignedLocally(turma.id, d.id)))) && (
+                            <div className="text-center py-8 text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-800/30 rounded-lg border border-slate-100 dark:border-zinc-800">
+                                Nenhuma enturmação vinculada a este professor. Clique em "Modo Edição" para atribuir disciplinas.
                             </div>
-                        ))}
+                        )}
+                        {turmas.map(turma => {
+                            const hasAssignments = areas.some(a => a.disciplinas.some(d => isAssignedLocally(turma.id, d.id)));
+
+                            if (!isEditMode && !hasAssignments) {
+                                return null;
+                            }
+
+                            return (
+                                <div key={turma.id} className="border border-slate-200 dark:border-zinc-800 shadow-sm rounded-lg overflow-hidden">
+                                    <div className="bg-slate-100 dark:bg-zinc-800 px-4 py-3 font-semibold text-slate-800 dark:text-zinc-200 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+                                        <span>{turma.serie} - {turma.nome}</span>
+                                    </div>
+
+                                    <table className="w-full text-left text-sm text-slate-600 dark:text-zinc-400">
+                                        <thead className="text-xs uppercase bg-white dark:bg-zinc-900 text-slate-500 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
+                                            <tr>
+                                                <th className="px-4 py-3 font-medium w-1/4">Área</th>
+                                                <th className="px-4 py-3 font-medium w-1/4">Disciplina</th>
+                                                <th className="px-4 py-3 font-medium text-center">Horários</th>
+                                                <th className="px-4 py-3 font-medium text-right w-1/4">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
+                                            {areas.flatMap(area =>
+                                                area.disciplinas.map(discip => {
+                                                    const key = `${turma.id}_${discip.id}`;
+
+                                                    const otherProfessors = getOtherAssignedProfessors(turma.id, discip.id);
+                                                    const hasOtherProfessors = otherProfessors.length > 0;
+
+                                                    // Determine UI state
+                                                    const isAssigned = isAssignedLocally(turma.id, discip.id);
+
+                                                    if (!isEditMode && !isAssigned) {
+                                                        return null;
+                                                    }
+
+                                                    const localState = localAssignments[key];
+                                                    const dbSchedulesStr = JSON.stringify(getDBAssignedSchedules(turma.id, discip.id).map(s => ({ dia_semana: s.dia_semana, horario_id: s.horario_id })).sort((a, b) => a.horario_id - b.horario_id));
+                                                    const localSchedulesStr = localState !== undefined ? JSON.stringify([...localState].sort((a, b) => a.horario_id - b.horario_id)) : undefined;
+
+                                                    const hasChanged = localSchedulesStr !== undefined && localSchedulesStr !== dbSchedulesStr;
+
+                                                    // Calculate summary of days
+                                                    let schedToSummarize = localState !== undefined ? localState : getDBAssignedSchedules(turma.id, discip.id);
+                                                    const daysSet = new Set(schedToSummarize.map(s => s.dia_semana.substring(0, 3)));
+                                                    const daysSummary = Array.from(daysSet).join(', ');
+
+                                                    return (
+                                                        <tr key={discip.id} className={`hover:bg-slate-50 dark:hover:bg-zinc-800/30 transition-colors ${isAssigned ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}>
+                                                            <td className="px-4 py-3 text-slate-500 text-xs">
+                                                                {area.nome}
+                                                            </td>
+                                                            <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100">
+                                                                {discip.nome}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                {isEditMode ? (
+                                                                    <Button
+                                                                        variant={isAssigned ? "default" : "outline"}
+                                                                        size="sm"
+                                                                        onClick={() => openScheduleModal(turma.id, discip.id, turma.nome, discip.nome)}
+                                                                        className={isAssigned ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+                                                                    >
+                                                                        <Calendar className="w-4 h-4 mr-2" />
+                                                                        {isAssigned ? `${schedToSummarize.length} Aulas` : "Configurar"}
+                                                                    </Button>
+                                                                ) : (
+                                                                    isAssigned ? (
+                                                                        <div className="flex items-center justify-center gap-2">
+                                                                            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
+                                                                            <span className="font-medium text-slate-700 dark:text-zinc-300">
+                                                                                {schedToSummarize.length} Aula(s)
+                                                                            </span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-slate-400 dark:text-zinc-600">-</span>
+                                                                    )
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-right">
+                                                                <div className="text-xs flex flex-col items-end gap-1">
+                                                                    {hasChanged && (
+                                                                        <span className="text-indigo-600 font-medium text-xs break-keep">
+                                                                            (Modificado)
+                                                                        </span>
+                                                                    )}
+                                                                    {isAssigned && (
+                                                                        <span className="text-emerald-700 dark:text-emerald-400 font-medium text-[10px] uppercase tracking-wider">
+                                                                            {daysSummary}
+                                                                        </span>
+                                                                    )}
+                                                                    {hasOtherProfessors && (
+                                                                        <span className="text-amber-600 mt-1" title={`Também lecionado por: ${otherProfessors.join(', ')}`}>
+                                                                            Colega(s): {otherProfessors.join(', ')}
+                                                                        </span>
+                                                                    )}
+                                                                    {!isAssigned && !hasOtherProfessors && (
+                                                                        <span className="text-slate-400">
+                                                                            Sem professor
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            )}
+
+                                            {areas.every(a => a.disciplinas.length === 0) && (
+                                                <tr>
+                                                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                                                        Nenhuma disciplina cadastrada.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>

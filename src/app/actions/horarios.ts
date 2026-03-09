@@ -16,7 +16,7 @@ export async function getHorarios(): Promise<{ data?: Horario[], error?: string 
     try {
         const { data, error } = await supabaseAdmin
             .from("horarios")
-            .select("*")
+            .select("id, inicio, fim, tipo")
             .order("inicio", { ascending: true });
 
         if (error) throw error;

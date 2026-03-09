@@ -1,8 +1,6 @@
 import { getHorarios } from "@/app/actions/horarios";
 import { HorariosClient } from "@/components/settings/horarios/horarios-client";
 
-export const dynamic = "force-dynamic";
-
 export default async function HorariosPage() {
     const { data: horarios, error } = await getHorarios();
 

@@ -117,3 +117,18 @@ export async function uploadAvatar(formData: FormData) {
         return { error: err.message };
     }
 }
+
+export async function getProfessores() {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from("usuarios")
+            .select("id, nome, alias")
+            .eq("tipo", "professor")
+            .order("nome", { ascending: true });
+
+        if (error) throw error;
+        return { data };
+    } catch (err: any) {
+        return { error: err.message };
+    }
+}

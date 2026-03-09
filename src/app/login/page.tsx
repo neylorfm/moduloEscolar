@@ -1,8 +1,6 @@
 import { getInstituicao } from "@/app/actions/instituicao";
 import { LoginForm } from "@/components/auth/login-form";
 
-export const dynamic = "force-dynamic";
-
 export default async function LoginPage() {
     const { data: instituicao } = await getInstituicao();
 

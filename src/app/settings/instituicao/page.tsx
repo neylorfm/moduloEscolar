@@ -48,11 +48,11 @@ export default function InstituicaoSettingsPage() {
                 cor_1: formData.get("cor_1") as string,
                 cor_2: formData.get("cor_2") as string,
                 cor_3: formData.get("cor_3") as string,
-                cor_4: formData.get("cor_4") as string,
                 cor_5: formData.get("cor_5") as string,
                 logout_professor: Number(formData.get("logout_professor")),
                 logout_coordenador: Number(formData.get("logout_coordenador")),
                 logout_administrador: Number(formData.get("logout_administrador")),
+                semanas_agendamento: Number(formData.get("semanas_agendamento")),
             };
 
             const res = await updateInstituicao(payload);
@@ -172,8 +172,6 @@ export default function InstituicaoSettingsPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-2">Administrador (min)</label>
-                            <input type="number" min="5" required name="logout_administrador" defaultValue={data?.logout_administrador} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white" />
-                            <p className="text-xs text-slate-500 mt-1">Recomendado tempos mais curtos para segurança alta.</p>
                         </div>
                     </div>
                 </div>
@@ -188,3 +186,4 @@ export default function InstituicaoSettingsPage() {
         </div>
     );
 }
+

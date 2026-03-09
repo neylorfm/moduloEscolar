@@ -2,8 +2,6 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { UserTable } from "@/components/users/user-table";
 import { UserDialog } from "@/components/users/user-dialog";
 
-export const dynamic = "force-dynamic";
-
 export default async function UsuariosPage() {
     // Busca os usuários no banco
     const { data: usuarios, error } = await supabaseAdmin

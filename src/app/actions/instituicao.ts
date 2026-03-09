@@ -29,6 +29,7 @@ export async function updateInstituicao(data: {
     logout_professor: number;
     logout_coordenador: number;
     logout_administrador: number;
+    semanas_agendamento?: number;
     logotipo_url?: string;
 }) {
     try {

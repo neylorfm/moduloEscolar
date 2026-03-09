@@ -22,7 +22,7 @@ export async function getRecursos(): Promise<{ data?: Recurso[], error?: string 
     try {
         const { data, error } = await supabaseAdmin
             .from("recursos")
-            .select("*")
+            .select("id, nome, icone, detalhes, ativo, motivo_inatividade")
             .order("nome");
 
         if (error) throw error;
