@@ -3,7 +3,7 @@ export type AgendamentoStatus = 'PRE_RESERVA' | 'CONFIRMADO' | 'FIXO' | 'CANCELA
 export interface Agendamento {
     id: string;
     recurso_id: number;
-    usuario_id: string;
+    usuario_id: string | null;
     criado_por: string | null;
     data_agendamento: string; // ISO Date string
     horario_id: number;

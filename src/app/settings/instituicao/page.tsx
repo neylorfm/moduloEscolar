@@ -48,6 +48,7 @@ export default function InstituicaoSettingsPage() {
                 cor_1: formData.get("cor_1") as string,
                 cor_2: formData.get("cor_2") as string,
                 cor_3: formData.get("cor_3") as string,
+                cor_4: formData.get("cor_4") as string,
                 cor_5: formData.get("cor_5") as string,
                 logout_professor: Number(formData.get("logout_professor")),
                 logout_coordenador: Number(formData.get("logout_coordenador")),
