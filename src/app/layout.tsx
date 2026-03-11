@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 
-export const runtime = "edge";
-export const dynamic = "force-dynamic";
-
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppLayoutWrapper } from "@/components/layout/app-layout-wrapper";
