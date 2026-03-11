@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { User } from "@supabase/supabase-js";
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -35,29 +37,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         let mounted = true;
 
-        async function fetchProfile(userId: string) {
-            const { data, error } = await supabase
-                .from("usuarios")
-                .select("*")
-                .eq("id", userId)
-                .single();
+        // Failsafe: if loading takes more than 10 seconds, force it to stop
+        const fallbackTimer = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn("Auth initialization timed out. Forcing load completion.");
+                setLoading(false);
+            }
+        }, 10000);
 
-            if (mounted) {
-                if (data) setProfile(data as UserProfile);
-                else setProfile(null);
+        async function fetchProfile(userId: string) {
+            try {
+                const { data, error } = await supabase
+                    .from("usuarios")
+                    .select("*")
+                    .eq("id", userId)
+                    .single();
+
+                if (mounted) {
+                    if (data) setProfile(data as UserProfile);
+                    else setProfile(null);
+                }
+            } catch (err) {
+                console.error("Error fetching profile:", err);
+                if (mounted) setProfile(null);
             }
         }
 
         async function initAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (mounted) {
-                setUser(session?.user || null);
-                if (session?.user) {
-                    await fetchProfile(session.user.id);
-                } else {
-                    setProfile(null);
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                
+                if (mounted) {
+                    setUser(session?.user || null);
+                    if (session?.user) {
+                        await fetchProfile(session.user.id);
+                    } else {
+                        setProfile(null);
+                    }
                 }
-                setLoading(false);
+            } catch (err) {
+                console.error("Error initializing auth:", err);
+            } finally {
+                if (mounted) {
+                    setLoading(false);
+                    clearTimeout(fallbackTimer);
+                }
             }
         }
 
@@ -73,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         setProfile(null);
                     }
                     setLoading(false);
+                    clearTimeout(fallbackTimer);
                 }
             }
         );
@@ -80,13 +106,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => {
             mounted = false;
             subscription.unsubscribe();
+            clearTimeout(fallbackTimer);
         };
     }, []);
 
     const signOut = async () => {
-        await supabase.auth.signOut();
-        // Redirect to login handled by protected layouts or components if needed
-        window.location.href = "/login";
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.error("Error signing out of Supabase:", error);
+        } finally {
+            router.push("/login");
+            router.refresh();
+        }
     };
 
     useEffect(() => {

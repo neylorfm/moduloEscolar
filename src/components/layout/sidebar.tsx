@@ -185,7 +185,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
                         <TooltipProvider delayDuration={0}>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={signOut} className="h-9 w-9 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg shrink-0">
+                                    <Button variant="ghost" size="icon" onClick={() => signOut()} className="h-9 w-9 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg shrink-0">
                                         <Power className="h-5 w-5" />
                                         <span className="sr-only">Sair</span>
                                     </Button>
@@ -198,7 +198,7 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
                     ) : (
                         <Button
                             variant="ghost"
-                            onClick={signOut}
+                            onClick={() => signOut()}
                             className="w-full justify-start gap-2 border border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white"
                         >
                             <Power className="h-4 w-4 shrink-0" />
